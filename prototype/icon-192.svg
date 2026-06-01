@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5B5BF7"></stop>
+      <stop offset="1" stop-color="#8A4FFF"></stop>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="44" fill="url(#g)"></rect>
+  <circle cx="60" cy="96" r="14" fill="#fff" opacity=".95"></circle>
+  <circle cx="132" cy="64" r="10" fill="#fff" opacity=".75"></circle>
+  <circle cx="132" cy="128" r="10" fill="#fff" opacity=".75"></circle>
+  <path d="M70 92 L124 66 M70 100 L124 126" stroke="#fff" stroke-width="3" opacity=".8" stroke-linecap="round"></path>
+  <text x="96" y="172" text-anchor="middle" font-family="ui-monospace, monospace" font-size="20" font-weight="700" fill="#fff" letter-spacing="2">TICMI</text>
+</svg>
