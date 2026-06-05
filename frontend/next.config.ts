@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   turbopack: {},
   allowedDevOrigins: ['192.168.100.33'],
   devIndicators: false,
+  logging: {
+    browserToTerminal: true,
+  },
 };
 
 export default nextConfig;
