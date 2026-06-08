@@ -4,33 +4,98 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { I } from '@/components/shared/icons';
 
-const CHOICES = [
-  { l:'A', t:'det A = 5 · A⁻¹ = (1/5)·[[4,−2],[−3,2]]', state:'' },
-  { l:'B', t:'det A = 2 · A⁻¹ = (1/2)·[[4,−2],[−3,2]]', state:'selected' },
-  { l:'C', t:'det A = −2 · A⁻¹ = (−1/2)·[[4,−2],[−3,2]]', state:'' },
-  { l:'D', t:'det A is undefined (1/2⁻¹ is fractional)', state:'trap' },
-];
-
 export default function StudentAssignmentsPage() {
   const router = useRouter();
-  const [selected, setSelected] = useState('B');
+  const [answer, setAnswer] = useState('');
   const [conf, setConf] = useState(4);
   const [showHint, setShowHint] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [backspaceCount, setBackspaceCount] = useState(0);
+  const [startTime] = useState(Date.now());
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      setBackspaceCount(prev => prev + 1);
+    }
+    if (e.key === 'Enter') {
+      handleSubmit();
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!answer.trim()) return;
+
+    setIsSubmitting(true);
+    const dwellTime = Math.round((Date.now() - startTime) / 1000);
+
+    try {
+      // 1. Start session on functions composition
+      const sessionResponse = await fetch('http://localhost:3001/api/sessions/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId: 'std_default_dev',
+          nodeId: 'f-fungsi-komposisi-invers',
+        }),
+      });
+
+      if (!sessionResponse.ok) throw new Error('Failed to start session');
+      const session = await sessionResponse.json();
+
+      // 2. Submit learning telemetry
+      await fetch(`http://localhost:3001/api/sessions/${session.id}/telemetry`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nodeId: 'f-fungsi-komposisi-invers',
+          dwellTimeSeconds: dwellTime,
+          backspaceCount: backspaceCount,
+          confidenceRating: conf,
+          typedCharacters: answer.length,
+        }),
+      });
+
+      // 3. Connect to WebSocket and submit answer to trigger LangGraph loop
+      const socket = require('socket.io-client').io('http://localhost:3001/chat');
+      
+      socket.on('connect', () => {
+        socket.emit('join_session', { sessionId: session.id });
+        socket.emit('send_message', { message: answer });
+      });
+
+      socket.on('agent_response', (data: { text: string; agentType: string }) => {
+        socket.disconnect();
+        // Redirect to Teach-Me mode
+        router.push(`/student/teach-me?sessionId=${session.id}`);
+      });
+
+      socket.on('error', (err: any) => {
+        console.error('WS Error:', err);
+        socket.disconnect();
+        // Fallback redirect
+        router.push(`/student/teach-me?sessionId=${session.id}`);
+      });
+
+    } catch (err) {
+      console.error('Failed to submit answer:', err);
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <div style={{ paddingTop: 54, paddingBottom: 80, minHeight: '100vh', overflow: 'auto', background: '#fff' }}>
+    <div style={{ paddingTop: 54, paddingBottom: 100, minHeight: '100vh', overflow: 'auto', background: '#fff' }}>
       {/* progress bar */}
       <div style={{ padding: '4px 22px 0', display: 'flex', alignItems: 'center', gap: 12 }}>
         <button onClick={() => router.back()} className="icon-btn" style={{ width: 36, height: 36, borderRadius: 12, flexShrink: 0 }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
         </button>
         <div style={{ flex: 1 }}>
-          <div style={{ fontFamily: 'var(--f-mono)', fontSize: 10, color: 'var(--muted)', letterSpacing: '.1em' }}>SOAL 4 DARI 6</div>
+          <div style={{ fontFamily: 'var(--f-mono)', fontSize: 10, color: 'var(--muted)', letterSpacing: '.1em' }}>TUGAS MANDIRI SOAL 1 DARI 3</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
             <div style={{ flex: 1, height: 4, background: 'var(--bg-2)', borderRadius: 999, overflow: 'hidden' }}>
-              <div style={{ width: '66%', height: '100%', background: 'var(--grad)' }} />
+              <div style={{ width: '33%', height: '100%', background: 'var(--grad)' }} />
             </div>
-            <span style={{ fontFamily: 'var(--f-mono)', fontSize: 11, color: 'var(--muted)' }}>24:18</span>
+            <span style={{ fontFamily: 'var(--f-mono)', fontSize: 11, color: 'var(--muted)' }}>Fase F</span>
           </div>
         </div>
       </div>
@@ -38,52 +103,51 @@ export default function StudentAssignmentsPage() {
       {/* question */}
       <div style={{ padding: '22px' }}>
         <div className="eyebrow"><span className="dot" />APPLY · BLOOM L3</div>
-        <div style={{ fontFamily: 'var(--f-serif)', fontSize: 22, lineHeight: 1.3, marginTop: 10 }}>
-          Diberikan matriks{' '}
-          <span style={{ fontFamily: 'var(--f-mono)', fontSize: 17, background: 'var(--bg-2)', padding: '3px 8px', borderRadius: 6 }}>A = [[2, 2], [3, 4]]</span>.
-          Hitung determinan A, lalu invers A.
+        <div style={{ fontFamily: 'var(--f-serif)', fontSize: 21, lineHeight: 1.3, marginTop: 10 }}>
+          Selesaikan komposisi fungsi berikut:<br />
+          Diberikan fungsi <span style={{ fontFamily: 'var(--f-mono)', fontSize: 16, background: 'var(--bg-2)', padding: '2px 6px', borderRadius: 4 }}>f(x) = 1/x</span> dan <span style={{ fontFamily: 'var(--f-mono)', fontSize: 16, background: 'var(--bg-2)', padding: '2px 6px', borderRadius: 4 }}>g(x) = x − 2</span>.<br />
+          Tentukan persamaan untuk <span style={{ fontWeight: 600 }}>(f ∘ g)(x)</span>.
         </div>
 
         {/* what TICMI watches */}
         <div style={{ marginTop: 16, padding: '12px 14px', background: 'rgba(91,91,247,.05)', borderRadius: 14, border: '1px solid rgba(91,91,247,.15)' }}>
-          <div style={{ fontFamily: 'var(--f-mono)', fontSize: 10, color: 'var(--indigo)', letterSpacing: '.1em', marginBottom: 8 }}>TICMI MEMANTAU</div>
+          <div style={{ fontFamily: 'var(--f-mono)', fontSize: 10, color: 'var(--indigo)', letterSpacing: '.1em', marginBottom: 8 }}>TICMI MEMANTAU KONSEP PRASYARAT</div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {['Penyederhanaan entri','det A = ad−bc','Terapkan 1/det','Tanda adjugate'].map(t => (
+            {['Operasi Aljabar Pecahan','Domain Fungsi pecahan','Aturan Substitusi'].map(t => (
               <span key={t} className="tag" style={{ fontSize: 10 }}>{t}</span>
             ))}
           </div>
         </div>
 
-        {/* choices */}
-        <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {CHOICES.map(c => {
-            const isSelected = selected === c.l;
-            return (
-              <div key={c.l} onClick={() => setSelected(c.l)} style={{
-                padding: '14px', borderRadius: 16, cursor: 'pointer',
-                border: '1.5px solid ' + (isSelected ? 'var(--indigo)' : 'var(--line)'),
-                background: isSelected ? 'rgba(91,91,247,.05)' : '#fff',
-                display: 'flex', alignItems: 'flex-start', gap: 12,
-                transition: 'border-color .15s, background .15s',
-              }}>
-                <span style={{
-                  width: 30, height: 30, borderRadius: 999, flexShrink: 0,
-                  background: isSelected ? 'var(--grad)' : 'var(--bg-2)',
-                  border: '1px solid ' + (isSelected ? 'transparent' : 'var(--line)'),
-                  color: isSelected ? '#fff' : 'var(--ink-2)',
-                  display: 'grid', placeItems: 'center',
-                  fontFamily: 'var(--f-mono)', fontWeight: 600, fontSize: 13,
-                }}>{c.l}</span>
-                <span style={{ flex: 1, fontSize: 13.5, lineHeight: 1.5, fontFamily: 'var(--f-mono)' }}>{c.t}</span>
-              </div>
-            );
-          })}
+        {/* Text Input */}
+        <div style={{ marginTop: 24 }}>
+          <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: 6 }}>JAWABAN ANDA</label>
+          <input 
+            type="text"
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Tuliskan solusi Anda (misal: 1/(x-2) atau 1/x - 2)..."
+            style={{ 
+              width: '100%', 
+              padding: '14px', 
+              fontSize: 14, 
+              border: '1.5px solid var(--line)', 
+              borderRadius: 16, 
+              outline: 'none',
+              fontFamily: 'var(--f-mono)',
+              boxShadow: 'var(--sh-1)'
+            }}
+          />
+          <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 6 }}>
+            *Hint: Coba masukkan jawaban salah <code style={{ background: 'var(--bg-2)', padding: '2px 4px', borderRadius: 4 }}>1/x - 2</code> untuk melihat bagaimana sistem mendeteksi celah konsep.
+          </div>
         </div>
 
         {/* confidence */}
-        <div style={{ marginTop: 18, padding: '14px 16px', border: '1px solid var(--line)', borderRadius: 16, background: 'var(--bg-2)' }}>
+        <div style={{ marginTop: 24, padding: '14px 16px', border: '1px solid var(--line)', borderRadius: 16, background: 'var(--bg-2)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <div style={{ fontSize: 13, fontWeight: 500 }}>Keyakinanmu</div>
+            <div style={{ fontSize: 13, fontWeight: 500 }}>Keyakinanmu dengan solusi ini</div>
             <div style={{ fontFamily: 'var(--f-mono)', fontSize: 13, color: 'var(--indigo)', fontWeight: 600 }}>{conf * 20}%</div>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
@@ -93,43 +157,15 @@ export default function StudentAssignmentsPage() {
           </div>
         </div>
 
-        {/* hint */}
+        {/* hint panel */}
         {showHint && (
           <div style={{ marginTop: 14, padding: '14px', borderRadius: 14, background: 'rgba(251,241,220,.7)', border: '1px solid rgba(201,138,23,.3)' }}>
-            <div className="eyebrow" style={{ fontSize: 10 }}>Hint · 1 dari 3</div>
+            <div className="eyebrow" style={{ fontSize: 10 }}>Hint</div>
             <div style={{ fontSize: 13, marginTop: 8, lineHeight: 1.55 }}>
-              Perhatikan entri (1,2) = 2. Sekarang terapkan det A = ad − bc secara langsung.
+              Substitusikan ekspresi g(x) ke dalam setiap variabel x di fungsi f(x).
             </div>
           </div>
         )}
-
-        {/* assignments list below */}
-        <div style={{ marginTop: 24 }}>
-          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 10 }}>Semua tugas aktif</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {[
-              { t:'Matriks invers 2×2',         due:'hari ini 23:59', p:66, status:'ongoing' },
-              { t:'Eksponen & logaritma · quiz', due:'closed',         p:91, status:'done'    },
-              { t:'Sistem persamaan linear',     due:'besok 23:59',    p:0,  status:'todo'    },
-              { t:'Fungsi kuadrat · diagnostic', due:'Jum 29 Mei',     p:0,  status:'todo'    },
-            ].map((r, i) => (
-              <div key={i} style={{ padding: '14px', borderRadius: 14, background: '#fff', border: '1px solid ' + (r.status === 'ongoing' ? 'rgba(91,91,247,.3)' : 'var(--line)') }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ fontWeight: 500, fontSize: 13.5 }}>{r.t}</div>
-                  {r.status === 'done'    && <span className="tag tag--ok"  style={{ fontSize: 10, flexShrink: 0 }}>selesai</span>}
-                  {r.status === 'ongoing' && <span className="tag tag--ind" style={{ fontSize: 10, flexShrink: 0 }}>berlangsung</span>}
-                  {r.status === 'todo'    && <span className="tag"          style={{ fontSize: 10, flexShrink: 0 }}>{r.due}</span>}
-                </div>
-                {r.p > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
-                    <div className="bar" style={{ flex: 1 }}><i style={{ width: `${r.p}%` }} /></div>
-                    <span style={{ fontFamily: 'var(--f-mono)', fontSize: 11 }}>{r.p}%</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* sticky bottom */}
@@ -137,8 +173,26 @@ export default function StudentAssignmentsPage() {
         <button onClick={() => setShowHint(true)} className="icon-btn" style={{ width: 48, height: 48, borderRadius: 14, color: 'var(--warn)', background: 'rgba(201,138,23,.10)', border: '1px solid rgba(201,138,23,.2)', flexShrink: 0 }}>
           {I.spark({ size: 18 })}
         </button>
-        <button style={{ flex: 1, background: 'var(--grad)', color: '#fff', border: 0, borderRadius: 16, fontSize: 15, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 10px 24px -8px rgba(91,91,247,.5)' }}>
-          Kirim & lanjut {I.arrow({ size: 15, stroke: '#fff' })}
+        <button 
+          onClick={handleSubmit}
+          disabled={isSubmitting || !answer.trim()}
+          style={{ 
+            flex: 1, 
+            background: isSubmitting ? 'var(--muted)' : 'var(--grad)', 
+            color: '#fff', 
+            border: 0, 
+            borderRadius: 16, 
+            fontSize: 15, 
+            fontWeight: 600, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            gap: 8, 
+            boxShadow: '0 10px 24px -8px rgba(91,91,247,.5)',
+            cursor: isSubmitting ? 'not-allowed' : 'pointer'
+          }}
+        >
+          {isSubmitting ? 'Mengirim...' : 'Kirim Jawaban'} {I.arrow({ size: 15, stroke: '#fff' })}
         </button>
       </div>
     </div>
