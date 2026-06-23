@@ -77,3 +77,25 @@ Ikuti rute pengerjaan berikut agar visualisasi kognitif dan interaksi agen AI te
 ## 3. Catatan Penyempurnaan Teknis (Offline Fallback)
 * Jika koneksi internet ke API LLM terputus, backend NestJS & FastAPI secara otomatis mendeteksi kegagalan koneksi dan menggunakan simulasi respons lokal berbasis aturan (*rule-based simulator*).
 * Hal ini memastikan demo Anda berjalan **100% aman dan lancar** tanpa adanya delay atau error koneksi LLM yang tidak di inginkan selama perekaman video.
+
+---
+
+## 4. Kepatuhan Ketentuan Lomba LIDM VII 2026 (Divisi 1 ITDP)
+
+Cabang **Inovasi Teknologi Digital Pendidikan (ITDP)** dengan subtema **"Teknologi Digital untuk Ekosistem Pendidikan Berdampak dan Berintegritas"** menetapkan beberapa aturan spesifik untuk video demonstrasi (milestone minimal 50% pengerjaan):
+
+### A. Spesifikasi Teknis Video
+*   **Format & Resolusi**: MP4 720p atau 1080p.
+*   **Durasi**: Maksimum **3 menit** (di luar intro dan subtitle).
+*   **Kelengkapan**: Wajib mencantumkan **intro** dan **subtitle** penjelasan.
+*   **Format Judul Video (YouTube)**:
+    `LIDM 2026 - ITDP - [Kode PT] - [Nama Tim] - [Judul Karya] - Proposal`
+
+### B. Tips Pengambilan Demo untuk Nilai Maksimal (Bobot Penilaian ITDP)
+Saat merekam video, pastikan Anda menyorot aspek-aspek berikut untuk memenuhi kriteria penilaian juri:
+1.  **Dampak Ekosistem Pendidikan (Bobot 20%)**: Tekankan bagaimana platform TICMI-v3 mendeteksi celah secara personal untuk siswa dan membantu guru menyusun rencana pengajaran adaptif klasikal melalui dasbor guru.
+2.  **Aspek Permasalahan (Bobot 20%)**: Jelaskan di awal video bahwa masalah utama numerasi SMA adalah kelemahan konsep prasyarat dasar (Fase D/E), bukan materi Fase F itu sendiri.
+3.  **Idea & Tingkat Kecerdasan (Bobot 25%)**: Tunjukkan orkestrasi Multi-Agent AI menggunakan **LangGraph** (Supervisor, Error Analysis, Misconception, Routing, Socratic, dan Mastery) yang membedakan platform ini dengan LMS linier biasa.
+4.  **Aspek Pengembangan & Teknis (Bobot 25%)**: Tunjukkan fungsionalitas visualisasi Concept Map (React Flow) yang berubah warna secara real-time dan rendering formula LaTeX yang presisi.
+5.  **Rencana & Target Validasi (Bobot 10%)**: Tunjukkan adanya rencana pengukuran usabilitas sistem (skor target SUS $\ge 70$) dan kepuasan guru.
+
