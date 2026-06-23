@@ -2,6 +2,13 @@
 import time
 import sys
 
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
+
 def print_header(title):
     print("\n" + "=" * 60)
     print(f"  {title}")
@@ -27,8 +34,7 @@ def main():
     simulate_agent("Error Analysis Agent", "Menganalisis tipe kesalahan siswa...")
     time.sleep(0.5)
     
-    # Simple rule-based logic to mock AI classification
-    keywords_prereq = ["pecahan", "tambah", "kurang", "aljabar", "salah hitung", "tidak tahu", "fraction", "subtract", "algebra"]
+    keywords_prereq = ["pecahan", "tambah", "kurang", "aljabar", "salah hitung", "tidak tahu", "fraction", "subtract", "algebra", "1/x", "1/x - 2", "/"]
     is_prereq_gap = any(keyword in student_answer.lower() for keyword in keywords_prereq)
     
     if is_prereq_gap:

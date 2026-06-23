@@ -80,6 +80,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const memory = await this.db.getStudentMemory(studentId);
     const history = memory.history || [];
 
+    // Retrieve active session to determine remediation state
+    const session = await this.db.getSession(sessionId);
+    const isRemediating = session?.status === 'remediating';
+    const diagnosedGapNodeId = isRemediating ? (memory.prerequisite_gaps?.[0] || 'd-operasi-bilangan') : null;
+
     // 2. Prepare payload for FastAPI AI Service
     const aiServiceUrl = this.configService.get<string>('AI_SERVICE_URL') || 'http://localhost:8000';
     const payload = {
@@ -87,7 +92,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       studentId,
       message: studentMessage,
       history: history,
-      telemetry: {}, // Pass telemetry if needed
+      telemetry: {},
+      remediationActive: isRemediating,
+      diagnosedGapNodeId: diagnosedGapNodeId,
     };
 
     let reply = 'Maaf, sistem AI sedang tidak dapat merespons. Silakan coba lagi.';
@@ -184,7 +191,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // If student mentions fractional operations or algebraic division errors (gap)
     if (text.includes('1/x - 2') || text.includes('pecahan') || text.includes('penyederhanaan aljabar')) {
       return {
-        reply: '🤖 [Kiko (AI Murid)]: "Tunggu dulu... kenapa 1/(x-2) itu tidak sama dengan 1/x - 2? Saya bingung cara menyamakan penyebut pecahan aljabar. Bisa jelaskan aturannya, Kak?"',
+        reply: '🤖 [Kiko (AI Murid)]: "Tunggu dulu... kenapa $\\frac{1}{x-2}$ itu tidak sama dengan $\\frac{1}{x} - 2$? Saya bingung cara menyamakan penyebut pecahan aljabar. Bisa jelaskan aturannya, Kak?"',
         errorType: 'prerequisite_gap',
         diagnosedGapNodeId: 'd-operasi-bilangan',
         agentType: 'socratic',

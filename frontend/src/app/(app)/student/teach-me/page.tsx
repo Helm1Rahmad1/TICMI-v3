@@ -4,11 +4,28 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { I } from '@/components/shared/icons';
+import Latex from '@/components/shared/Latex';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   id: string;
+}
+
+function MessageText({ content }: { content: string }) {
+  if (!content.includes('$')) return <>{content}</>;
+  const parts = content.split(/(\$[^\$]+\$)/g);
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (part.startsWith('$') && part.endsWith('$')) {
+          const math = part.slice(1, -1);
+          return <Latex key={index} math={math} />;
+        }
+        return <span key={index}>{part}</span>;
+      })}
+    </>
+  );
 }
 
 function TeachMePageContent() {
@@ -21,7 +38,7 @@ function TeachMePageContent() {
     {
       id: 'init_1',
       role: 'assistant',
-      content: '🤖 [Kiko (AI Murid)]: "Halo Kak! Saya sedang mencoba menyelesaikan limit dan komposisi pecahan, tapi saya bingung kenapa 1/(x-2) itu tidak sama dengan 1/x - 2. Bisa bantu jelaskan cara menyamakan penyebut pecahan aljabar?"'
+      content: '🤖 [Kiko (AI Murid)]: "Halo Kak! Saya sedang mencoba menyelesaikan limit dan komposisi pecahan, tapi saya bingung kenapa $\\frac{1}{x-2}$ itu tidak sama dengan $\\frac{1}{x} - 2$. Bisa bantu jelaskan cara menyamakan penyebut pecahan aljabar?"'
     }
   ]);
   const [inputText, setInputText] = useState('');
@@ -173,10 +190,9 @@ function TeachMePageContent() {
               borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px', 
               fontSize: 13.5, 
               maxWidth: '80%', 
-              lineHeight: 1.5, 
               boxShadow: msg.role === 'user' ? 'none' : 'var(--sh-1)' 
             }}>
-              {msg.content}
+              <MessageText content={msg.content} />
             </div>
           </div>
         ))}

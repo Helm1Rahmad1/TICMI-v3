@@ -27,22 +27,25 @@ class ChatRequest(BaseModel):
     message: str
     history: List[Dict[str, str]] = []
     telemetry: Optional[Dict[str, Any]] = None
+    remediationActive: Optional[bool] = False
+    diagnosedGapNodeId: Optional[str] = None
 
 @app.post("/ai/chat")
 async def chat_endpoint(request: ChatRequest):
     print(f"[FastAPI] Received chat request for session {request.sessionId}, student {request.studentId}")
     
-    # Check if there is an ongoing remediation in history
-    # If student is already in a remediation flow, set remediation_active to True in state
-    remediation_active = False
-    diagnosed_gap_node_id = None
+    # Check if there is an ongoing remediation in history or passed in payload
+    remediation_active = request.remediationActive or False
+    diagnosed_gap_node_id = request.diagnosedGapNodeId
     
-    # Simple heuristic: inspect history to see if the session was already remediating
-    for turn in reversed(request.history):
-        if turn.get("role") == "assistant" and "d-operasi-bilangan" in turn.get("content", ""):
-            remediation_active = True
-            diagnosed_gap_node_id = "d-operasi-bilangan"
-            break
+    if not remediation_active:
+        # Fallback to history checking (looks for gap id or AI student signature)
+        for turn in reversed(request.history):
+            content = turn.get("content", "")
+            if turn.get("role") == "assistant" and ("d-operasi-bilangan" in content or "AI Murid" in content or "Kiko" in content):
+                remediation_active = True
+                diagnosed_gap_node_id = "d-operasi-bilangan"
+                break
 
     # Prepare inputs for LangGraph
     inputs = {

@@ -8,9 +8,26 @@ export class DatabaseService implements OnModuleInit {
   private useMock = false;
 
   // Mock in-memory storage for offline development fallback
-  private mockSessions: Record<string, any> = {};
+  private mockSessions: Record<string, any> = {
+    'default_session': {
+      id: 'default_session',
+      student_id: 'std_default_dev',
+      active_node_id: 'd-operasi-bilangan',
+      status: 'active',
+      started_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+  };
   private mockTelemetry: any[] = [];
-  private mockMemory: Record<string, any> = {};
+  private mockMemory: Record<string, any> = {
+    'std_default_dev': {
+      student_id: 'std_default_dev',
+      history: [],
+      error_type: null,
+      prerequisite_gaps: [],
+      mastery_scores: {},
+    }
+  };
   private mockNodes: any[] = [
     { id: 'd-operasi-bilangan', label: 'Operasi Bilangan & Pecahan', phase: 'D', description: 'Pemahaman dasar perhitungan bilangan bulat, pecahan, desimal, dan aritmetika.' },
     { id: 'd-aljabar-dasar', label: 'Bentuk Aljabar & Operasinya', phase: 'D', description: 'Pengenalan variabel dan penyederhanaan aljabar dasar.' },
@@ -284,6 +301,87 @@ export class DatabaseService implements OnModuleInit {
       this.handleError(error);
       console.error('[DatabaseService] Error updating memory:', error);
       return memory;
+    }
+    return data;
+  }
+
+  async getStudentProfile(studentId: string) {
+    if (this.useMock || !this.supabase) {
+      return {
+        id: studentId,
+        name: 'Devin',
+        email: 'siswa@sekolah.sch.id',
+        role: 'student',
+        streak: 18,
+        xp: 320,
+      };
+    }
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(studentId);
+    if (!isUuid) {
+      return {
+        id: studentId,
+        name: 'Devin',
+        email: 'siswa@sekolah.sch.id',
+        role: 'student',
+        streak: 18,
+        xp: 320,
+      };
+    }
+
+    const { data, error } = await this.supabase.from('users').select('id, name, email, role').eq('id', studentId).maybeSingle();
+    if (error) {
+      this.handleError(error);
+      console.error('[DatabaseService] Error getting student profile:', error);
+      return {
+        id: studentId,
+        name: 'Devin',
+        email: 'siswa@sekolah.sch.id',
+        role: 'student',
+        streak: 18,
+        xp: 320,
+      };
+    }
+    
+    return {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      role: data.role,
+      streak: 18,
+      xp: 320,
+    };
+  }
+
+  async getActiveSession(studentId: string) {
+    if (this.useMock || !this.supabase) {
+      const activeSession = Object.values(this.mockSessions).find(
+        (s: any) => s.student_id === studentId && (s.status === 'active' || s.status === 'remediating')
+      );
+      return activeSession || null;
+    }
+
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(studentId);
+    if (!isUuid) {
+      const activeSession = Object.values(this.mockSessions).find(
+        (s: any) => s.student_id === studentId && (s.status === 'active' || s.status === 'remediating')
+      );
+      return activeSession || null;
+    }
+
+    const { data, error } = await this.supabase
+      .from('learning_sessions')
+      .select('*')
+      .eq('student_id', studentId)
+      .in('status', ['active', 'remediating'])
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      this.handleError(error);
+      console.error('[DatabaseService] Error getting active session:', error);
+      return null;
     }
     return data;
   }

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { I } from '@/components/shared/icons';
+import Latex from '@/components/shared/Latex';
 
 export default function StudentAssignmentsPage() {
   const router = useRouter();
@@ -105,8 +106,8 @@ export default function StudentAssignmentsPage() {
         <div className="eyebrow"><span className="dot" />APPLY · BLOOM L3</div>
         <div style={{ fontFamily: 'var(--f-serif)', fontSize: 21, lineHeight: 1.3, marginTop: 10 }}>
           Selesaikan komposisi fungsi berikut:<br />
-          Diberikan fungsi <span style={{ fontFamily: 'var(--f-mono)', fontSize: 16, background: 'var(--bg-2)', padding: '2px 6px', borderRadius: 4 }}>f(x) = 1/x</span> dan <span style={{ fontFamily: 'var(--f-mono)', fontSize: 16, background: 'var(--bg-2)', padding: '2px 6px', borderRadius: 4 }}>g(x) = x − 2</span>.<br />
-          Tentukan persamaan untuk <span style={{ fontWeight: 600 }}>(f ∘ g)(x)</span>.
+          Diberikan fungsi <span style={{ fontFamily: 'var(--f-mono)', fontSize: 16, background: 'var(--bg-2)', padding: '2px 6px', borderRadius: 4 }}><Latex math="f(x) = \frac{1}{x}" /></span> dan <span style={{ fontFamily: 'var(--f-mono)', fontSize: 16, background: 'var(--bg-2)', padding: '2px 6px', borderRadius: 4 }}><Latex math="g(x) = x - 2" /></span>.<br />
+          Tentukan persamaan untuk <span style={{ fontWeight: 600 }}><Latex math="(f \circ g)(x)" /></span>.
         </div>
 
         {/* what TICMI watches */}

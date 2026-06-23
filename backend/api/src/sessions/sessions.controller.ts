@@ -77,4 +77,28 @@ export class SessionsController {
       studentMemory: memory,
     };
   }
+
+  @Get('student-dashboard')
+  async getStudentDashboard(@Query('studentId') studentId: string) {
+    const activeStudentId = studentId || 'std_default_dev';
+    console.log(`[SessionsController] Loading student dashboard details for student ${activeStudentId}`);
+
+    const [profile, activeSession, conceptMapData] = await Promise.all([
+      this.db.getStudentProfile(activeStudentId),
+      this.db.getActiveSession(activeStudentId),
+      this.getConceptMap(activeStudentId),
+    ]);
+
+    const nodes = conceptMapData.nodes || [];
+    const totalNodes = nodes.length;
+    const greenNodes = nodes.filter(n => n.status === 'green').length;
+    const masteryPercentage = totalNodes > 0 ? Math.round((greenNodes / totalNodes) * 100) : 0;
+
+    return {
+      profile,
+      activeSession,
+      masteryPercentage,
+      conceptMapData,
+    };
+  }
 }

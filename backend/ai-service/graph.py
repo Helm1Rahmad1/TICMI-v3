@@ -19,6 +19,21 @@ class AgentState(TypedDict):
     reply: str
     agent_type: str
 
+# Helper to parse JSON safely from LLM output
+def safe_json_loads(text: str) -> Dict[str, Any]:
+    text = text.strip()
+    start = text.find('{')
+    end = text.rfind('}')
+    if start != -1 and end != -1 and end > start:
+        json_str = text[start:end+1]
+        try:
+            return json.loads(json_str)
+        except Exception:
+            pass
+    # Clean fallback if markdown codeblock remains
+    clean = text.replace("```json", "").replace("```", "").strip()
+    return json.loads(clean)
+
 # Helper to call LLM with fallback
 def call_llm(system_prompt: str, user_prompt: str) -> str:
     gemini_key = os.environ.get("GEMINI_API_KEY")
@@ -69,7 +84,7 @@ def call_llm(system_prompt: str, user_prompt: str) -> str:
                 "Content-Type": "application/json"
             }
             payload = {
-                "model": "meta/llama3-8b-instruct",
+                "model": "meta/llama-3.1-8b-instruct",
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
@@ -118,8 +133,8 @@ def local_simulator(system_prompt: str, user_prompt: str) -> str:
             })
 
     # Socratic Node (Kiko) Simulator
-    if "socratic" in system_prompt.lower():
-        return "🤖 [Kiko (AI Murid)]: \"Tunggu Kak... jadi 1/(x-2) itu tidak sama dengan 1/x - 2? Saya bingung cara menyamakan penyebut pecahan aljabar. Bisa tolong ajarkan aturannya, Kak?\""
+    if "socratic" in system_prompt.lower() or "kiko" in system_prompt.lower():
+        return "🤖 [Kiko (AI Murid)]: \"Tunggu Kak... jadi $\\frac{1}{x-2}$ itu tidak sama dengan $\\frac{1}{x} - 2$? Saya bingung cara menyamakan penyebut pecahan aljabar. Bisa tolong ajarkan aturannya, Kak?\""
 
     return "Saya masih belajar konsep ini. Bisakah jelaskan kembali?"
 
@@ -163,9 +178,7 @@ Note: If the student submits '1/x - 2' for composition of f(x)=1/x and g(x)=x-2,
     
     response_text = call_llm(system_prompt, user_prompt)
     try:
-        # Clean JSON if wrapped in markdown blocks
-        clean_json = response_text.replace("```json", "").replace("```", "").strip()
-        data = json.loads(clean_json)
+        data = safe_json_loads(response_text)
         return {
             "error_type": data.get("error_type"),
             "diagnosed_gap_node_id": data.get("diagnosed_gap_node_id"),
@@ -194,7 +207,8 @@ def socratic_node(state: AgentState) -> Dict[str, Any]:
     system_prompt = """You are 'Kiko', an AI student. You are talking to your tutor (the student).
 You are struggling to understand a math concept (finding a common denominator for algebraic fractions).
 You must act confused and ask a probing question.
-Ask the user why 1/(x-2) is not equal to 1/x - 2, and request that they explain how to find a common denominator.
+Ask the user why $\\frac{1}{x-2}$ is not equal to $\\frac{1}{x} - 2$, and request that they explain how to find a common denominator.
+Wrap all mathematical expressions or formulas in single dollar signs ($...$), for example: $\\frac{1}{x-2}$.
 NEVER explain the concept yourself or give direct mathematical formulas. Your job is to extract explanation from the tutor.
 Keep your response in Indonesian, short, and starting with '🤖 [Kiko (AI Murid)]:'."""
 
@@ -228,8 +242,7 @@ Output strictly in JSON format:
     
     response_text = call_llm(system_prompt, user_prompt)
     try:
-        clean_json = response_text.replace("```json", "").replace("```", "").strip()
-        data = json.loads(clean_json)
+        data = safe_json_loads(response_text)
         mastery = data.get("mastery_achieved", False)
         
         if mastery:
@@ -258,12 +271,16 @@ Output strictly in JSON format:
 
 # --- Conditional Routing logic ---
 
-def route_error_status(state: AgentState) -> str:
+def route_by_remediation(state: AgentState) -> str:
     if state.get("remediation_active"):
-        # Prerequisite gap detected, go through Socratic path
         return "remediation"
     else:
-        # Local error or correct, go straight to direct feedback
+        return "analysis"
+
+def route_error_status(state: AgentState) -> str:
+    if state.get("error_type") == "prerequisite_gap" or state.get("remediation_active"):
+        return "remediation"
+    else:
         return "direct_feedback"
 
 def route_mastery_status(state: AgentState) -> str:
@@ -288,21 +305,28 @@ workflow.add_node("mastery", mastery_node)
 workflow.set_entry_point("supervisor")
 
 # Configure Edges
-workflow.add_edge("supervisor", "error_analysis")
+workflow.add_conditional_edges(
+    "supervisor",
+    route_by_remediation,
+    {
+        "remediation": "mastery",
+        "analysis": "error_analysis"
+    }
+)
 
 workflow.add_conditional_edges(
     "error_analysis",
     route_error_status,
     {
         "remediation": "routing",
-        "direct_feedback": "socratic" # Socratic can serve simple direct feedback too
+        "direct_feedback": "socratic"
     }
 )
 
 workflow.add_edge("routing", "socratic")
 
-# In Socratic session, the loop goes: Socratic response -> Student reply -> Mastery check
-workflow.add_edge("socratic", "mastery")
+# In Socratic session, Kiko asks a question and we return response to student client (end of this request cycle)
+workflow.add_edge("socratic", END)
 
 workflow.add_conditional_edges(
     "mastery",
@@ -315,3 +339,4 @@ workflow.add_conditional_edges(
 
 # Compile graph
 graph = workflow.compile()
+

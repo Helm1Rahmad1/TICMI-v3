@@ -1,13 +1,93 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { I } from '@/components/shared/icons';
+
+interface ConceptNode {
+  id: string;
+  label: string;
+  phase: string;
+  description: string;
+  status: string;
+  score: number;
+}
+
+interface DashboardData {
+  profile: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    streak: number;
+    xp: number;
+  };
+  activeSession: {
+    id: string;
+    student_id: string;
+    active_node_id: string;
+    status: 'active' | 'remediating' | 'completed';
+    started_at: string;
+    updated_at: string;
+  } | null;
+  masteryPercentage: number;
+  conceptMapData: {
+    nodes: ConceptNode[];
+    edges: any[];
+    studentMemory: any;
+  };
+}
 
 export default function StudentHomePage() {
   const router = useRouter();
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadDashboard() {
+      try {
+        const response = await fetch('http://localhost:3001/api/sessions/student-dashboard?studentId=std_default_dev');
+        if (response.ok) {
+          const json = await response.json();
+          setData(json);
+        }
+      } catch (err) {
+        console.error('Failed to load student dashboard:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadDashboard();
+  }, []);
+
   const go = (r: string) => {
     const map: Record<string, string> = { teach: '/student/teach-me', concept: '/intelligence/concept-map', heatmap: '/intelligence/heatmap' };
     router.push(map[r] ?? `/${r}`);
+  };
+
+  const profile = data?.profile;
+  const activeSession = data?.activeSession;
+  const masteryPercentage = data?.masteryPercentage ?? 0;
+  const isOperasiBilanganGreen = data?.conceptMapData?.nodes?.find(n => n.id === 'd-operasi-bilangan')?.status === 'green';
+
+  const hasActiveSession = !!activeSession;
+  const isRemediating = activeSession?.status === 'remediating';
+  
+  const activeNodeLabel = activeSession?.active_node_id
+    ? (data?.conceptMapData?.nodes?.find(n => n.id === activeSession.active_node_id)?.label || activeSession.active_node_id.replace(/-/g, ' '))
+    : 'Operasi Bilangan & Pecahan';
+
+  const cardTitle = hasActiveSession ? (isRemediating ? 'LANJUT REMEDIASI SOCRATIC' : 'LANJUT BELAJAR') : 'REKOMENDASI BELAJAR';
+  const cardNode = activeNodeLabel;
+  const cardDesc = hasActiveSession ? (isRemediating ? 'Kiko sedang bingung tentang konsep prasyarat.' : 'Sesi belajar Anda sedang aktif.') : 'Ayo pelajari konsep baru di Peta Konsep.';
+  const buttonText = hasActiveSession ? 'Lanjutkan sesi' : 'Buka Peta Konsep';
+
+  const handleContinue = () => {
+    if (hasActiveSession) {
+      router.push(`/student/teach-me?sessionId=${activeSession.id}`);
+    } else {
+      router.push('/intelligence/concept-map');
+    }
   };
 
   return (
@@ -16,9 +96,13 @@ export default function StudentHomePage() {
       <div style={{ padding: '10px 22px 8px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontFamily: 'var(--f-mono)', fontSize: 10.5, letterSpacing: '.12em', color: 'var(--muted)', textTransform: 'uppercase' }}>SEL 26 MEI · HARI KE-18 🔥</div>
-          <div style={{ fontFamily: 'var(--f-serif)', fontSize: 30, lineHeight: 1.05, marginTop: 4, letterSpacing: '-.01em' }}>Halo, Devin</div>
+          <div style={{ fontFamily: 'var(--f-serif)', fontSize: 30, lineHeight: 1.05, marginTop: 4, letterSpacing: '-.01em' }}>
+            {loading ? 'Memuat...' : `Halo, ${profile?.name || 'Devin'}`}
+          </div>
         </div>
-        <div className="avatar avatar--green" style={{ width: 38, height: 38, fontSize: 13 }}>D</div>
+        <div className="avatar avatar--green" style={{ width: 38, height: 38, fontSize: 13 }}>
+          {profile?.name ? profile.name.charAt(0) : 'D'}
+        </div>
       </div>
 
       {/* continue card */}
@@ -29,23 +113,23 @@ export default function StudentHomePage() {
             <div style={{ position: 'relative', width: 78, height: 78, flexShrink: 0 }}>
               <svg viewBox="0 0 80 80" style={{ position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }}>
                 <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,.2)" strokeWidth="6" />
-                <circle cx="40" cy="40" r="34" fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 34 * .62} ${2 * Math.PI * 34}`} />
+                <circle cx="40" cy="40" r="34" fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 34 * (masteryPercentage / 100)} ${2 * Math.PI * 34}`} />
               </svg>
               <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', textAlign: 'center' }}>
                 <div>
-                  <div style={{ fontFamily: 'var(--f-serif)', fontSize: 24, lineHeight: 1 }}>62%</div>
+                  <div style={{ fontFamily: 'var(--f-serif)', fontSize: 24, lineHeight: 1 }}>{masteryPercentage}%</div>
                   <div style={{ fontFamily: 'var(--f-mono)', fontSize: 8, opacity: .75, letterSpacing: '.08em' }}>MASTERED</div>
                 </div>
               </div>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: 'var(--f-mono)', fontSize: 9.5, opacity: .85, letterSpacing: '.1em' }}>LANJUT TEACH-ME</div>
-              <div style={{ fontFamily: 'var(--f-serif)', fontSize: 18, lineHeight: 1.2, marginTop: 4 }}>Eksponen negatif → resiprokal</div>
-              <div style={{ fontSize: 11.5, opacity: .85, marginTop: 6 }}>Kiko butuh satu contoh lagi.</div>
+              <div style={{ fontFamily: 'var(--f-mono)', fontSize: 9.5, opacity: .85, letterSpacing: '.1em' }}>{cardTitle}</div>
+              <div style={{ fontFamily: 'var(--f-serif)', fontSize: 18, lineHeight: 1.2, marginTop: 4 }}>{cardNode}</div>
+              <div style={{ fontSize: 11.5, opacity: .85, marginTop: 6 }}>{cardDesc}</div>
             </div>
           </div>
-          <button onClick={() => go('teach')} style={{ marginTop: 14, width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,.96)', color: '#5B5BF7', borderRadius: 14, border: 0, fontWeight: 600, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            Lanjutkan sesi {I.arrow({ size: 14, stroke: '#5B5BF7' })}
+          <button onClick={handleContinue} style={{ marginTop: 14, width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,.96)', color: '#5B5BF7', borderRadius: 14, border: 0, fontWeight: 600, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer' }}>
+            {buttonText} {I.arrow({ size: 14, stroke: '#5B5BF7' })}
           </button>
         </div>
       </div>
@@ -76,13 +160,15 @@ export default function StudentHomePage() {
       <div style={{ padding: '18px 22px 6px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
           <div style={{ fontWeight: 600, fontSize: 14 }}>Misi hari ini</div>
-          <div style={{ fontFamily: 'var(--f-mono)', fontSize: 10.5, color: 'var(--muted)' }}>3 / 5</div>
+          <div style={{ fontFamily: 'var(--f-mono)', fontSize: 10.5, color: 'var(--muted)' }}>
+            {[true, true, isOperasiBilanganGreen, false, false].filter(Boolean).length} / 5
+          </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {[
             { d: true,  t: 'Review eksponen positif',  x: '+40 XP',  hot: false },
             { d: true,  t: 'Quiz matriks 2×2',         x: '+120 XP', hot: false },
-            { d: false, t: 'Teach Kiko · neg. exp.',    x: '+180 XP', hot: true  },
+            { d: isOperasiBilanganGreen, t: 'Teach Kiko tentang Pecahan', x: '+180 XP', hot: !isOperasiBilanganGreen  },
             { d: false, t: 'Apply · 3 word problems',   x: '+90 XP',  hot: false },
             { d: false, t: 'Pair-teach with Hesti',     x: '+60 XP',  hot: false },
           ].map((r, i) => (
@@ -104,14 +190,18 @@ export default function StudentHomePage() {
             {I.flame({ size: 18, stroke: 'var(--warn)' })}
             <span style={{ fontFamily: 'var(--f-mono)', fontSize: 10, color: 'var(--muted)', letterSpacing: '.1em' }}>STREAK</span>
           </div>
-          <div style={{ fontFamily: 'var(--f-serif)', fontSize: 30, marginTop: 6, lineHeight: 1 }}>18 <span style={{ fontSize: 13, color: 'var(--muted)' }}>hari</span></div>
+          <div style={{ fontFamily: 'var(--f-serif)', fontSize: 30, marginTop: 6, lineHeight: 1 }}>
+            {profile?.streak || 18} <span style={{ fontSize: 13, color: 'var(--muted)' }}>hari</span>
+          </div>
         </div>
         <div style={{ padding: '14px', border: '1px solid var(--line)', borderRadius: 16, background: '#fff' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             {I.bolt({ size: 18, stroke: 'var(--indigo)' })}
             <span style={{ fontFamily: 'var(--f-mono)', fontSize: 10, color: 'var(--muted)', letterSpacing: '.1em' }}>XP HARI INI</span>
           </div>
-          <div style={{ fontFamily: 'var(--f-serif)', fontSize: 30, marginTop: 6, lineHeight: 1 }}>320</div>
+          <div style={{ fontFamily: 'var(--f-serif)', fontSize: 30, marginTop: 6, lineHeight: 1 }}>
+            {profile?.xp || 320}
+          </div>
         </div>
       </div>
 
@@ -131,3 +221,4 @@ export default function StudentHomePage() {
     </div>
   );
 }
+
