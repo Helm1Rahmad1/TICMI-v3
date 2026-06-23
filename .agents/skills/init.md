@@ -19,6 +19,10 @@ TICMI (*Teach Intelligent Concept Mapping Interaction*) adalah platform pembelaj
 *   `backend/ai-service/`: Microservice Python berbasis **FastAPI** untuk mengorkestrasikan Multi-Agent AI menggunakan **LangGraph**.
 *   `agent/`: Utilitas backend Python untuk *embeddings* dan *indexing* dokumen kurikulum ke pangkalan data vektor.
 
+### Alat Otomatisasi & Script (`.agents/skills/`)
+*   **`setup.bat`** (Windows) / **`setup.sh`** (Unix): Membantu menginisialisasi lingkungan pengembangan dengan menginstal dependensi npm dan membuat Python virtual environment secara otomatis di semua service.
+*   **`run.bat`**: Launcher sekali klik untuk memicu ketiga server lokal (FastAPI, NestJS Gateway, dan Next.js Frontend) secara paralel di jendela terminal Command Prompt yang berbeda.
+
 ---
 
 ## 3. Aturan & Fitur Next.js 16.2 Agentic Support
@@ -62,4 +66,5 @@ Silakan merujuk pada dokumen-dokumen berikut untuk memahami detail proyek:
 *   [ARCHITECTURE.md](file:///c:/projects/TICMI-v3/.agents/docs/ARCHITECTURE.md): Arsitektur tiga lapis decoupled dan detail alur kognitif LangGraph.
 *   [KNOWLEDGE_MAP.md](file:///c:/projects/TICMI-v3/.agents/docs/KNOWLEDGE_MAP.md): Peta kurikulum matematika SMA (Fase D, E, F) dan skema warna visualisasi peta konsep.
 *   [PROGRESS.md](file:///c:/projects/TICMI-v3/.agents/docs/PROGRESS.md): Checklist progres pengerjaan dan roadmap proyek.
+*   [DEMO_GUIDE.md](file:///c:/projects/TICMI-v3/.agents/docs/DEMO_GUIDE.md): Panduan skenario dan langkah-langkah untuk merekam video demo.
 *   [Supabase SQL Schema](file:///c:/projects/TICMI-v3/.agents/skills/supabase-db-setup/schema.sql): Skema database PostgreSQL yang harus dipatuhi.

@@ -6,11 +6,11 @@ Dokumen ini memandu Anda langkah-demi-langkah untuk menjalankan platform **TICMI
 
 ## 1. Persiapan & Menjalankan Service
 
-Buka 3 jendela terminal terpisah di komputer Anda dan jalankan perintah berikut:
+Anda dapat meluncurkan ketiga service sekaligus menggunakan batch file **`run.bat`** yang berada di folder `.agents/skills/run.bat`, atau menjalankannya secara manual di 3 terminal terpisah:
 
 ### Terminal 1: FastAPI AI Service
 ```bash
-cd c:\projects\TICMI-v3\backend\ai-service
+cd backend/ai-service
 venv\Scripts\activate
 python main.py
 ```
@@ -18,14 +18,14 @@ python main.py
 
 ### Terminal 2: NestJS Gateway API
 ```bash
-cd c:\projects\TICMI-v3\backend\api
+cd backend/api
 npm run start:dev
 ```
 *Layanan ini akan aktif di port `3001` (`http://localhost:3001`).*
 
 ### Terminal 3: Next.js Frontend App
 ```bash
-cd c:\projects\TICMI-v3\frontend
+cd frontend
 npm run dev
 ```
 *Aplikasi web akan aktif di port `3000` (`http://localhost:3000`).*
@@ -76,4 +76,4 @@ Ikuti rute pengerjaan berikut agar visualisasi kognitif dan interaksi agen AI te
 
 ## 3. Catatan Penyempurnaan Teknis (Offline Fallback)
 * Jika koneksi internet ke API LLM terputus, backend NestJS & FastAPI secara otomatis mendeteksi kegagalan koneksi dan menggunakan simulasi respons lokal berbasis aturan (*rule-based simulator*).
-* Hal ini memastikan demo Anda berjalan **100% aman dan lancar** tanpa adanya delay atau error koneksi LLM yang tidak diinginkan selama perekaman video.
+* Hal ini memastikan demo Anda berjalan **100% aman dan lancar** tanpa adanya delay atau error koneksi LLM yang tidak di inginkan selama perekaman video.
