@@ -64,7 +64,7 @@ export default function LoginPage() {
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 11px', borderRadius: 999, background: 'rgba(74,71,245,.08)', border: '1px solid rgba(74,71,245,.15)' }}>
           <span style={{ width: 5, height: 5, borderRadius: 999, background: '#4A47F5', display: 'inline-block' }} />
-          <span style={{ fontFamily: 'var(--f-mono)', fontSize: 10, color: '#4A47F5', letterSpacing: '.1em', fontWeight: 600 }}>LIDM 2026</span>
+          <span style={{ fontFamily: 'var(--f-mono)', fontSize: 10, color: '#4A47F5', letterSpacing: '.1em', fontWeight: 600 }}>v3.0.0</span>
         </div>
       </div>
 

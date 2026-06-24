@@ -9,7 +9,7 @@ export default function TeacherHomePage() {
     const map: Record<string, string> = {
       teach: '/student/teach-me', heatmap: '/intelligence/heatmap',
       upload: '/teacher/upload', classes: '/teacher/classes',
-      student: '/student', concept: '/intelligence/concept-map',
+      student: '/student', concept: '/student/map',
     };
     router.push(map[route] ?? `/${route}`);
   };

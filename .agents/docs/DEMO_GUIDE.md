@@ -37,23 +37,24 @@ npm run dev
 Ikuti rute pengerjaan berikut agar visualisasi kognitif dan interaksi agen AI terlihat sempurna:
 
 ### Bagian A: Alur Siswa (Socratic Remediation)
-1. Buka browser di **`http://localhost:3000`**. Anda akan melihat splash screen animasi premium LIDM 2026.
+1. Buka browser di **`http://localhost:3000`**. Anda akan melihat splash screen animasi premium.
 2. Di halaman **Login**, pastikan tab **Siswa** terpilih. Masukkan email default:
    * **Email**: `siswa@sekolah.sch.id`
    * **Password**: `bebas` (diisi apa saja karena bypass autentikasi)
    * Klik **Masuk**.
 3. Di Dashboard Siswa, klik **Buka Peta Konsep** atau kunjungi menu Concept Map. Tunjukkan node **"Fungsi Komposisi & Invers"** yang sedang dipelajari dan node prasyarat **"Operasi Bilangan & Pecahan"** yang awalnya abu-abu/terkunci.
-4. Kembali ke Dashboard, lalu klik tugas **"Quiz matriks 2x2"** atau **"Assignments"** di sidebar.
+4. Kembali ke Dashboard, lalu pada bagian **Misi hari ini**, klik tugas **"Quiz Fungsi Komposisi"** (tindakan ini akan mengarahkan Anda ke halaman Kuis di `/student/assignments`).
 5. Anda akan disajikan soal:
    * *Selesaikan komposisi fungsi jika $f(x) = 1/x$ dan $g(x) = x - 2$. Tentukan $(f \circ g)(x)$.*
 6. Masukkan jawaban salah yang mencerminkan miskonsepsi prasyarat: **`1/x - 2`**. Lalu set tingkat keyakinan (confidence) ke nilai tinggi (misal 80%).
 7. Klik **Kirim Jawaban**.
 8. **Transisi Kognitif**:
    * Sistem secara otomatis mendeteksi **Prerequisite Gap** (celah prasyarat Fase D/E).
-   * Node **"Operasi Bilangan & Pecahan"** pada Concept Map akan berubah menjadi **Merah**.
-   * Siswa dialihkan ke **Teach-Me Mode** untuk mengajari AI Student (**Kiko**).
+   * Muncul notifikasi merah **"Celah Konsep Terdeteksi"** di bawah kolom jawaban dengan penjelasan detail.
+   * Node **"Operasi Bilangan & Pecahan"** pada Concept Map di latar belakang telah berubah menjadi **Merah**.
+   * Klik tombol merah **Mulai Sesi Teach-Me** di bawah notifikasi (atau tombol di bar bawah) untuk masuk ke mode Teach-Me dan mulai mengajari AI Student (**Kiko**).
 9. Di Teach-Me Mode, Kiko akan bertanya:
-   * *"Halo Kak! ... kenapa 1/(x-2) tidak sama dengan 1/x - 2? Bisa bantu jelaskan cara menyamakan penyebut pecahan aljabar?"*
+   * *"Halo Kak! Saya sedang mencoba menyelesaikan limit dan komposisi pecahan, tapi saya bingung kenapa $\frac{1}{x-2}$ itu tidak sama dengan $\frac{1}{x} - 2$. Bisa bantu jelaskan cara menyamakan penyebut pecahan aljabar?"*
 10. Berperanlah sebagai Guru dan ketik penjelasan di kolom chat:
     * **Penjelasan**: *"Kita harus menyamakan penyebutnya dahulu sebelum mengurangkannya."* (Pastikan mengandung kata kunci **penyebut** atau **samakan**).
 11. **Penyelesaian**:
@@ -63,12 +64,17 @@ Ikuti rute pengerjaan berikut agar visualisasi kognitif dan interaksi agen AI te
     * Anda akan diarahkan kembali ke peta konsep yang sudah terupdate secara visual.
 
 ### Bagian B: Alur Guru (Diagnostic Dashboard)
-1. Buka sidebar lalu pilih menu **Guru** (atau logout dan login kembali sebagai tab **Guru** dengan email `guru@sekolah.sch.id`).
+1. **Transisi Peran (Logout & Login Kembali)**:
+   * Di menu navigasi bawah, pilih tab **Profil** (ikon bintang `Kamu`).
+   * Scroll ke bawah dan klik tombol merah **Keluar / Ganti Peran**. Ini akan mengarahkan Anda kembali ke halaman Login.
+   * Pada halaman Login, klik tab **Guru** (ikon 📋) untuk mengubah peran.
+   * Masukkan email guru default: **`guru@sekolah.sch.id`** (Password bebas).
+   * Klik tombol **Masuk sebagai Guru**.
 2. Tunjukkan **Diagnostic Heatmap** kelas:
    * Anda bisa melihat grid baris-kolom berisi daftar siswa dan topik matematika.
    * Sel berwarna merah menunjukkan celah kritis siswa tertentu.
 3. Tunjukkan panel **Live Aktivitas** di Dashboard Guru:
-   * Log real-time akan menampilkan aktivitas siswa (misal: *"Devin Pradana baru saja menguasai Operasi Bilangan"*).
+   * Log real-time akan menampilkan aktivitas siswa secara langsung (misal: *"Devin Pradana baru saja menyelesaikan kuis"*).
 4. Tunjukkan panel **AI Rekomendasi**:
    * AI menyarankan tindakan kelas yang spesifik, seperti *"Sisipkan remediasi eksponen 10-min"* atau *"Pair-teach Devin & Hesti"*.
 

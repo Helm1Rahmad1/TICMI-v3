@@ -25,45 +25,82 @@ export class DatabaseService implements OnModuleInit {
       history: [],
       error_type: null,
       prerequisite_gaps: [],
-      mastery_scores: {},
+      mastery_scores: {
+        'd-operasi-bilangan': 0.9,
+        'd-bilangan-berpangkat': 0.9,
+        'd-geometri-datar': 0.9,
+        'd-pythagoras': 0.9,
+        'd-spldv': 0.9,
+        'd-relasi-fungsi': 0.9,
+        'd-transformasi-geometri': 0.9,
+        'd-statistika-peluang': 0.9,
+        'd-aljabar-linear': 0.9,
+        'e-eksponen-logaritma': 0.9,
+        'e-barisan-deret': 0.9,
+        'e-trigonometri-dasar': 0.9,
+        'e-spl-sptl': 0.9,
+        'e-fungsi-kuadrat': 0.9,
+        'e-statistika-data': 0.9,
+        'f-matriks': 0.9
+      },
     }
   };
   private mockNodes: any[] = [
+    { id: 'd-bilangan-berpangkat', label: 'Bilangan Berpangkat & Bentuk Akar', phase: 'D', description: 'Sifat-sifat eksponen, bilangan bulat, rasional, dan bentuk akar.' },
+    { id: 'd-aljabar-linear', label: 'Bentuk Aljabar & Persamaan Linear', phase: 'D', description: 'Manipulasi aljabar, persamaan dan pertidaksamaan linear satu variabel.' },
+    { id: 'd-geometri-datar', label: 'Bangun Datar, Garis, Sudut, & Kesebangunan', phase: 'D', description: 'Sifat geometri, sudut, garis sejajar/berpotongan, dan kesebangunan segitiga.' },
+    { id: 'd-pythagoras', label: 'Teorema Pythagoras', phase: 'D', description: 'Hubungan panjang sisi-sisi pada segitiga siku-siku dan tripel Pythagoras.' },
+    { id: 'd-spldv', label: 'Sistem Persamaan Linear Dua Variabel', phase: 'D', description: 'Model matematika dan penyelesaian SPLDV (grafik, substitusi, eliminasi).' },
+    { id: 'd-relasi-fungsi', label: 'Relasi, Fungsi, & Persamaan Garis Lurus', phase: 'D', description: 'Konsep relasi, fungsi, domain, range, serta representasi fungsi linear.' },
+    { id: 'd-transformasi-geometri', label: 'Transformasi Geometri Dasar', phase: 'D', description: 'Translasi, refleksi, rotasi, dan dilatasi pada bidang Kartesius.' },
+    { id: 'd-statistika-peluang', label: 'Statistika Data & Peluang Dasar', phase: 'D', description: 'Pengumpulan data, pemusatan/penyebaran data, dan peluang empirik/teoretik dasar.' },
     { id: 'd-operasi-bilangan', label: 'Operasi Bilangan & Pecahan', phase: 'D', description: 'Pemahaman dasar perhitungan bilangan bulat, pecahan, desimal, dan aritmetika.' },
-    { id: 'd-aljabar-dasar', label: 'Bentuk Aljabar & Operasinya', phase: 'D', description: 'Pengenalan variabel dan penyederhanaan aljabar dasar.' },
-    { id: 'd-persamaan-linear-satu', label: 'Persamaan Linear Satu Variabel', phase: 'D', description: 'Pemecahan persamaan linear dengan satu variabel.' },
-    { id: 'd-fungsi-dasar', label: 'Relasi & Fungsi Dasar', phase: 'D', description: 'Konsep domain, kodomain, range, dan grafik fungsi sederhana.' },
-    { id: 'd-pythagoras', label: 'Teorema Pythagoras', phase: 'D', description: 'Rumus sisi segitiga siku-siku.' },
-    { id: 'd-koordinat-kartesius', label: 'Sistem Koordinat Kartesius', phase: 'D', description: 'Pemetaan titik pada koordinat 2D.' },
-    { id: 'd-bangun-datar', label: 'Bangun Datar', phase: 'D', description: 'Sifat, keliling, dan luas bangun datar.' },
-    { id: 'e-eksponen-logaritma', label: 'Eksponen & Logaritma', phase: 'E', description: 'Operasi bilangan berpangkat, akar, dan logaritma.' },
-    { id: 'e-persamaan-linear-dua', label: 'Persamaan Linear Dua Variabel', phase: 'E', description: 'Sistem persamaan linear dua variabel (SPLDV).' },
-    { id: 'e-fungsi-kuadrat', label: 'Fungsi Kuadrat', phase: 'E', description: 'Karakteristik grafik fungsi kuadrat.' },
-    { id: 'e-relasi-fungsi', label: 'Relasi & Fungsi (Lanjutan)', phase: 'E', description: 'Definisi formal dan sifat fungsi.' },
-    { id: 'e-perbandingan-trigonometri', label: 'Perbandingan Trigonometri', phase: 'E', description: 'Nilai sinus, cosinus, tangent.' },
-    { id: 'f-matriks', label: 'Operasi Matriks', phase: 'F', description: 'Penjumlahan, perkalian, transpose, determinan, dan invers matriks.' },
-    { id: 'f-fungsi-komposisi-invers', label: 'Fungsi Komposisi & Invers', phase: 'F', description: 'Penggabungan fungsi (fog)(x) dan invers f(x).' },
-    { id: 'f-limit-fungsi', label: 'Limit Fungsi', phase: 'F', description: 'Limit fungsi aljabar.' },
-    { id: 'f-turunan-fungsi', label: 'Turunan Fungsi', phase: 'F', description: 'Turunan fungsi aljabar dan aplikasinya.' }
+    { id: 'e-eksponen-logaritma', label: 'Fungsi Eksponen & Logaritma', phase: 'E', description: 'Grafik, sifat, dan aplikasi fungsi eksponen serta logaritma.' },
+    { id: 'e-barisan-deret', label: 'Barisan & Deret Aritmetika & Geometri', phase: 'E', description: 'Pola bilangan, rumus suku ke-n, dan jumlah deret.' },
+    { id: 'e-trigonometri-dasar', label: 'Perbandingan Trigonometri', phase: 'E', description: 'Sinus, kosinus, tangen pada segitiga siku-siku dan sudut berelasi.' },
+    { id: 'e-spl-sptl', label: 'Sistem Persamaan & Pertidaksamaan Linear', phase: 'E', description: 'SPLDV, SPLTV, dan sistem pertidaksamaan linear dua variabel.' },
+    { id: 'e-fungsi-kuadrat', label: 'Persamaan & Fungsi Kuadrat', phase: 'E', description: 'Karakteristik, grafik, pemfaktoran, dan aplikasi fungsi kuadrat.' },
+    { id: 'e-statistika-data', label: 'Representasi & Interpretasi Data', phase: 'E', description: 'Histogram, diagram pencar, ukuran pemusatan dan penyebaran data berkelompok.' },
+    { id: 'f-fungsi-komposisi-invers', label: 'Fungsi Komposisi & Invers', phase: 'F', description: 'Operasi komposisi (fog)(x) dan invers fungsi f^{-1}(x).' },
+    { id: 'f-lingkaran', label: 'Lingkaran', phase: 'F', description: 'Persamaan lingkaran, garis singgung, dan tali busur.' },
+    { id: 'f-statistika-inferensial', label: 'Regresi Linear & Korelasi', phase: 'F', description: 'Analisis hubungan antar variabel, garis regresi, dan koefisien korelasi.' },
+    { id: 'f-matriks', label: 'Matriks & Operasinya', phase: 'F', description: 'Jenis, operasi, determinan, invers matriks, dan transformasi matriks.' },
+    { id: 'f-vektor', label: 'Vektor', phase: 'F', description: 'Vektor pada bidang/ruang, hasil kali titik, dan proyeksi.' },
+    { id: 'f-transformasi-lanjut', label: 'Transformasi Geometri dengan Matriks', phase: 'F', description: 'Komposisi transformasi geometri menggunakan perkalian matriks.' },
+    { id: 'f-polinomial', label: 'Polinomial / Suku Banyak', phase: 'F', description: 'Operasi, pembagian, teorema sisa, dan teorema faktor.' },
+    { id: 'f-trigonometri-lanjut', label: 'Fungsi & Aturan Trigonometri Lanjut', phase: 'F', description: 'Grafik fungsi trigonometri, identitas, aturan sinus/cosinus, dan luas daerah.' },
+    { id: 'f-anuitas', label: 'Anuitas, Bunga Majemuk, & Investasi', phase: 'F', description: 'Pemodelan keuangan, anuitas, pinjaman, dan investasi jangka panjang.' },
+    { id: 'f-peluang-majemuk', label: 'Kaidah Pencacahan & Peluang Majemuk', phase: 'F', description: 'Permutasi, kombinasi, peluang kejadian majemuk, saling lepas/bebas, dan bersyarat.' }
   ];
 
   private mockEdges: any[] = [
-    { source: 'd-operasi-bilangan', target: 'd-aljabar-dasar', description: 'Operasi dasar dibutuhkan untuk menghitung aljabar' },
-    { source: 'd-aljabar-dasar', target: 'd-persamaan-linear-satu', description: 'Aljabar dibutuhkan untuk manipulasi persamaan linear' },
-    { source: 'd-aljabar-dasar', target: 'd-fungsi-dasar', description: 'Fungsi dasar dinyatakan dalam variabel aljabar' },
-    { source: 'd-persamaan-linear-satu', target: 'e-persamaan-linear-dua', description: 'SPLDV butuh konsep persamaan linear satu variabel' },
-    { source: 'd-operasi-bilangan', target: 'e-eksponen-logaritma', description: 'Aritmetika mendasari pangkat pecahan' },
-    { source: 'd-fungsi-dasar', target: 'e-relasi-fungsi', description: 'Relasi fungsi dasar mendasari fungsi lanjutan' },
-    { source: 'd-fungsi-dasar', target: 'e-fungsi-kuadrat', description: 'Fungsi dasar mendasari pemodelan kuadrat' },
-    { source: 'd-pythagoras', target: 'e-perbandingan-trigonometri', description: 'Trigonometri dasar didefinisikan dari sisi segitiga' },
-    { source: 'e-relasi-fungsi', target: 'f-fungsi-komposisi-invers', description: 'Fungsi dasar harus dikuasai sebelum komposisi' },
-    { source: 'e-fungsi-kuadrat', target: 'f-fungsi-komposisi-invers', description: 'Fungsi kuadrat sering menjadi input komposisi' },
-    { source: 'e-eksponen-logaritma', target: 'f-limit-fungsi', description: 'Limit butuh manipulasi bentuk akar' },
-    { source: 'e-fungsi-kuadrat', target: 'f-limit-fungsi', description: 'Fungsi kuadrat digunakan dalam limit' },
-    { source: 'f-limit-fungsi', target: 'f-turunan-fungsi', description: 'Turunan didefinisikan dari limit' },
-    { source: 'e-perbandingan-trigonometri', target: 'f-fungsi-trigonometri', description: 'Perbandingan dasar mendasari grafik trigonometri' },
-    { source: 'd-bangun-datar', target: 'f-transformasi-geometri', description: 'Bangun datar adalah objek transformasi' },
-    { source: 'd-koordinat-kartesius', target: 'f-vektor', description: 'Vektor dinyatakan sebagai koordinat kartesius' }
+    { source: 'd-operasi-bilangan', target: 'd-aljabar-linear', description: 'Operasi dasar aritmetika diperlukan sebelum manipulasi bentuk aljabar.' },
+    { source: 'd-operasi-bilangan', target: 'e-eksponen-logaritma', description: 'Aritmetika mendasari pangkat pecahan.' },
+    { source: 'd-bilangan-berpangkat', target: 'e-eksponen-logaritma', description: 'Sifat eksponen dan akar menjadi fondasi aljabar fungsi eksponen dan logaritma.' },
+    { source: 'd-bilangan-berpangkat', target: 'e-barisan-deret', description: 'Pola eksponen dasar diperlukan untuk memahami deret geometri.' },
+    { source: 'd-pythagoras', target: 'e-trigonometri-dasar', description: 'Perbandingan sisi segitiga siku-siku mutlak membutuhkan Teorema Pythagoras.' },
+    { source: 'd-geometri-datar', target: 'e-trigonometri-dasar', description: 'Konsep kesebangunan segitiga adalah dasar dari perbandingan trigonometri.' },
+    { source: 'd-spldv', target: 'e-spl-sptl', description: 'SPLDV adalah kasus dasar yang perlu dikuasai sebelum generalisasi ke SPLTV dan pertidaksamaan.' },
+    { source: 'd-aljabar-linear', target: 'd-spldv', description: 'Bentuk aljabar dan persamaan linear mendasari sistem persamaan linear dua variabel.' },
+    { source: 'd-aljabar-linear', target: 'e-spl-sptl', description: 'Manipulasi aljabar linear diperlukan untuk eliminasi dan substitusi sistem persamaan.' },
+    { source: 'd-relasi-fungsi', target: 'e-fungsi-kuadrat', description: 'Konsep domain, range, dan pemetaan fungsi adalah prasyarat fungsi kuadrat.' },
+    { source: 'd-aljabar-linear', target: 'e-fungsi-kuadrat', description: 'Teknik faktorisasi dan manipulasi aljabar dasar.' },
+    { source: 'd-statistika-peluang', target: 'e-statistika-data', description: 'Pumusatan dan penyebaran data dasar dikembangkan ke data berkelompok.' },
+    { source: 'e-fungsi-kuadrat', target: 'f-fungsi-komposisi-invers', description: 'Memahami karakteristik fungsi, domain, range, dan invers dari fungsi kuadrat.' },
+    { source: 'd-pythagoras', target: 'f-lingkaran', description: 'Persamaan lingkaran diturunkan dari konsep jarak kuadrat/Pythagoras.' },
+    { source: 'd-geometri-datar', target: 'f-lingkaran', description: 'Sifat-sifat geometri lingkaran, sudut pusat, dan keliling.' },
+    { source: 'e-statistika-data', target: 'f-statistika-inferensial', description: 'Regresi dan korelasi membutuhkan interpretasi diagram pencar.' },
+    { source: 'e-statistika-data', target: 'f-peluang-majemuk', description: 'Logika himpunan dan dasar statistika diperlukan untuk peluang majemuk.' },
+    { source: 'd-spldv', target: 'f-matriks', description: 'Matriks dikembangkan sebagai alat komputasi untuk menyelesaikan sistem persamaan linear.' },
+    { source: 'd-pythagoras', target: 'f-vektor', description: 'Panjang vektor dan hasil kali titik menggunakan fondasi Pythagoras.' },
+    { source: 'd-geometri-datar', target: 'f-vektor', description: 'Vektor pada bidang koordinat Kartesius.' },
+    { source: 'd-transformasi-geometri', target: 'f-transformasi-lanjut', description: 'Konsep translasi, refleksi, rotasi, dan dilatasi dasar.' },
+    { source: 'f-matriks', target: 'f-transformasi-lanjut', description: 'Transformasi geometri direpresentasikan menggunakan perkalian matriks.' },
+    { source: 'd-aljabar-linear', target: 'f-polinomial', description: 'Operasi aljabar dan manipulasi suku banyak.' },
+    { source: 'e-fungsi-kuadrat', target: 'f-polinomial', description: 'Fungsi kuadrat adalah kasus khusus polinomial derajat 2.' },
+    { source: 'e-trigonometri-dasar', target: 'f-trigonometri-lanjut', description: 'Perbandingan dasar, sudut berelasi, dan identitas trigonometri.' },
+    { source: 'e-barisan-deret', target: 'f-anuitas', description: 'Anuitas dan bunga majemuk dimodelkan menggunakan deret geometri.' },
+    { source: 'e-eksponen-logaritma', target: 'f-anuitas', description: 'Fungsi eksponen untuk pertumbuhan uang.' }
   ];
 
   constructor(private configService: ConfigService) {}
@@ -103,29 +140,11 @@ export class DatabaseService implements OnModuleInit {
 
   // --- Concept Graph Operations ---
   async getNodes() {
-    if (this.useMock || !this.supabase) {
-      return this.mockNodes;
-    }
-    const { data, error } = await this.supabase.from('concept_nodes').select('*');
-    if (error) {
-      this.handleError(error);
-      console.error('[DatabaseService] Error fetching nodes:', error);
-      return this.mockNodes;
-    }
-    return data;
+    return this.mockNodes;
   }
 
   async getEdges() {
-    if (this.useMock || !this.supabase) {
-      return this.mockEdges;
-    }
-    const { data, error } = await this.supabase.from('concept_edges').select('*');
-    if (error) {
-      this.handleError(error);
-      console.error('[DatabaseService] Error fetching edges:', error);
-      return this.mockEdges;
-    }
-    return data;
+    return this.mockEdges;
   }
 
   // --- Learning Session Operations ---

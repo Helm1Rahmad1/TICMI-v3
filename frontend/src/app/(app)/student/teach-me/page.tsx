@@ -84,7 +84,7 @@ function TeachMePageContent() {
         setMasteryProgress(100);
         // Show success and redirect
         setTimeout(() => {
-          router.push('/intelligence/concept-map');
+          router.push('/student/map');
         }, 3000);
       } else {
         setMasteryProgress(prev => Math.min(prev + 15, 85));
@@ -129,7 +129,7 @@ function TeachMePageContent() {
   };
 
   return (
-    <div style={{ paddingTop: 54, paddingBottom: 110, height: '100vh', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg,#FBFAF7 0%,#fff 30%)' }}>
+    <div style={{ position: 'absolute', inset: 0, paddingTop: 28, paddingBottom: 0, display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg,#FBFAF7 0%,#fff 30%)', overflow: 'hidden' }}>
 
       {/* Kiko header */}
       <div style={{ padding: '4px 16px 12px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--line)' }}>

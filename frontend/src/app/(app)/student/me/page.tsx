@@ -98,7 +98,7 @@ export default function StudentMePage() {
           {[
             { i: 'bell',   l: 'Notifikasi',        r: 'on'  },
             { i: 'globe',  l: 'Bahasa Indonesia',   r: 'id'  },
-            { i: 'device', l: 'Install di HP',       r: 'A2HS'},
+            { i: 'device', l: 'Install di HP',       r: 'A2HS' },
             { i: 'cog',    l: 'Akun & privasi',      r: ''    },
           ].map((s, i) => (
             <div key={s.l} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderTop: i ? '1px solid var(--line-2)' : undefined }}>
@@ -111,6 +111,13 @@ export default function StudentMePage() {
             </div>
           ))}
         </div>
+        
+        <button 
+          onClick={() => router.push('/login')}
+          style={{ marginTop: 16, width: '100%', padding: '14px', background: 'var(--err-bg)', color: 'var(--err)', border: '1px solid rgba(209,67,67,.2)', borderRadius: 14, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+        >
+          Keluar / Ganti Peran
+        </button>
       </div>
     </div>
   );

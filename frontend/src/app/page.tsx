@@ -93,7 +93,7 @@ export default function SplashPage() {
             {/* badge */}
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 16, padding: '5px 12px', borderRadius: 999, background: 'rgba(255,255,255,.13)', border: '1px solid rgba(255,255,255,.22)' }}>
               <span style={{ width: 6, height: 6, borderRadius: 999, background: '#86EFAC', boxShadow: '0 0 7px #86EFAC', display: 'inline-block' }} />
-              <span style={{ fontFamily: 'var(--f-mono)', fontSize: 10, color: 'rgba(255,255,255,.88)', letterSpacing: '.12em' }}>LIDM 2026</span>
+              <span style={{ fontFamily: 'var(--f-mono)', fontSize: 10, color: 'rgba(255,255,255,.88)', letterSpacing: '.12em' }}>v3.0.0</span>
             </div>
           </div>
         </div>

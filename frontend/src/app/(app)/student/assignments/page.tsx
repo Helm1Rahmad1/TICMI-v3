@@ -7,19 +7,27 @@ import Latex from '@/components/shared/Latex';
 
 export default function StudentAssignmentsPage() {
   const router = useRouter();
+  const [showConceptsModal, setShowConceptsModal] = useState(false);
   const [answer, setAnswer] = useState('');
   const [conf, setConf] = useState(4);
   const [showHint, setShowHint] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [backspaceCount, setBackspaceCount] = useState(0);
   const [startTime] = useState(Date.now());
+  const [gapDetected, setGapDetected] = useState(false);
+  const [resolvedSessionId, setResolvedSessionId] = useState('');
+  const [feedbackText, setFeedbackText] = useState('');
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace') {
       setBackspaceCount(prev => prev + 1);
     }
     if (e.key === 'Enter') {
-      handleSubmit();
+      if (gapDetected) {
+        router.push(`/student/teach-me?sessionId=${resolvedSessionId}`);
+      } else {
+        handleSubmit();
+      }
     }
   };
 
@@ -66,15 +74,20 @@ export default function StudentAssignmentsPage() {
 
       socket.on('agent_response', (data: { text: string; agentType: string }) => {
         socket.disconnect();
-        // Redirect to Teach-Me mode
-        router.push(`/student/teach-me?sessionId=${session.id}`);
+        // Instead of direct redirect, show notification banner
+        setResolvedSessionId(session.id);
+        setFeedbackText(data.text);
+        setGapDetected(true);
+        setIsSubmitting(false);
       });
 
       socket.on('error', (err: any) => {
         console.error('WS Error:', err);
         socket.disconnect();
-        // Fallback redirect
-        router.push(`/student/teach-me?sessionId=${session.id}`);
+        // Fallback show notification banner
+        setResolvedSessionId(session.id);
+        setGapDetected(true);
+        setIsSubmitting(false);
       });
 
     } catch (err) {
@@ -84,9 +97,10 @@ export default function StudentAssignmentsPage() {
   };
 
   return (
-    <div style={{ paddingTop: 54, paddingBottom: 100, minHeight: '100vh', overflow: 'auto', background: '#fff' }}>
+    <div style={{ position: 'absolute', inset: 0, paddingTop: 28, paddingBottom: 0, display: 'flex', flexDirection: 'column', background: '#fff', overflow: 'hidden' }}>
+      
       {/* progress bar */}
-      <div style={{ padding: '4px 22px 0', display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ padding: '4px 22px 12px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--line-2)', flexShrink: 0 }}>
         <button onClick={() => router.back()} className="icon-btn" style={{ width: 36, height: 36, borderRadius: 12, flexShrink: 0 }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
         </button>
@@ -101,23 +115,26 @@ export default function StudentAssignmentsPage() {
         </div>
       </div>
 
-      {/* question */}
-      <div style={{ padding: '22px' }}>
-        <div className="eyebrow"><span className="dot" />APPLY · BLOOM L3</div>
-        <div style={{ fontFamily: 'var(--f-serif)', fontSize: 21, lineHeight: 1.3, marginTop: 10 }}>
+      {/* scrollable question content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '22px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="eyebrow"><span className="dot" />FUNGSI KOMPOSISI</div>
+          <button 
+            onClick={() => setShowConceptsModal(true)}
+            style={{
+              border: 0, background: 'rgba(91,91,247,.08)', color: 'var(--indigo)',
+              padding: '4px 10px', borderRadius: 999, fontSize: 10, fontWeight: 600,
+              fontFamily: 'var(--f-mono)', display: 'flex', alignItems: 'center', gap: 4,
+              cursor: 'pointer'
+            }}
+          >
+            🔍 Prasyarat
+          </button>
+        </div>
+        <div style={{ fontFamily: 'var(--f-serif)', fontSize: 21, lineHeight: 1.3, marginTop: 14 }}>
           Selesaikan komposisi fungsi berikut:<br />
           Diberikan fungsi <span style={{ fontFamily: 'var(--f-mono)', fontSize: 16, background: 'var(--bg-2)', padding: '2px 6px', borderRadius: 4 }}><Latex math="f(x) = \frac{1}{x}" /></span> dan <span style={{ fontFamily: 'var(--f-mono)', fontSize: 16, background: 'var(--bg-2)', padding: '2px 6px', borderRadius: 4 }}><Latex math="g(x) = x - 2" /></span>.<br />
           Tentukan persamaan untuk <span style={{ fontWeight: 600 }}><Latex math="(f \circ g)(x)" /></span>.
-        </div>
-
-        {/* what TICMI watches */}
-        <div style={{ marginTop: 16, padding: '12px 14px', background: 'rgba(91,91,247,.05)', borderRadius: 14, border: '1px solid rgba(91,91,247,.15)' }}>
-          <div style={{ fontFamily: 'var(--f-mono)', fontSize: 10, color: 'var(--indigo)', letterSpacing: '.1em', marginBottom: 8 }}>TICMI MEMANTAU KONSEP PRASYARAT</div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {['Operasi Aljabar Pecahan','Domain Fungsi pecahan','Aturan Substitusi'].map(t => (
-              <span key={t} className="tag" style={{ fontSize: 10 }}>{t}</span>
-            ))}
-          </div>
         </div>
 
         {/* Text Input */}
@@ -126,9 +143,10 @@ export default function StudentAssignmentsPage() {
           <input 
             type="text"
             value={answer}
+            disabled={gapDetected}
             onChange={(e) => setAnswer(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Tuliskan solusi Anda (misal: 1/(x-2) atau 1/x - 2)..."
+            placeholder={gapDetected ? "Miskonsepsi terdeteksi. Silakan ikuti remediasi." : "Tuliskan solusi Anda (misal: 1/(x-2) atau 1/x - 2)..."}
             style={{ 
               width: '100%', 
               padding: '14px', 
@@ -137,12 +155,51 @@ export default function StudentAssignmentsPage() {
               borderRadius: 16, 
               outline: 'none',
               fontFamily: 'var(--f-mono)',
-              boxShadow: 'var(--sh-1)'
+              boxShadow: 'var(--sh-1)',
+              background: gapDetected ? 'var(--bg-2)' : '#fff',
+              cursor: gapDetected ? 'not-allowed' : 'text'
             }}
           />
-          <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 6 }}>
-            *Hint: Coba masukkan jawaban salah <code style={{ background: 'var(--bg-2)', padding: '2px 4px', borderRadius: 4 }}>1/x - 2</code> untuk melihat bagaimana sistem mendeteksi celah konsep.
-          </div>
+          {gapDetected && (
+            <div style={{ 
+              marginTop: 16, 
+              padding: '16px', 
+              borderRadius: 16, 
+              background: 'var(--err-bg)', 
+              border: '1.5px dashed rgba(209,67,67,.3)',
+              animation: 'pageFade .3s ease both'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--err)', fontWeight: 600, fontSize: 13.5 }}>
+                ⚠️ Celah Konsep Terdeteksi
+              </div>
+              <div style={{ fontSize: 12.5, color: 'var(--ink-2)', marginTop: 8, lineHeight: 1.5 }}>
+                Sistem mendeteksi adanya kelemahan prasyarat dasar pada **Operasi Bilangan & Pecahan**. 
+                Bantu AI Murid Anda (**Kiko**) menyelesaikan konsep ini terlebih dahulu.
+              </div>
+              <button
+                onClick={() => router.push(`/student/teach-me?sessionId=${resolvedSessionId}`)}
+                style={{
+                  marginTop: 12,
+                  width: '100%',
+                  padding: '12px 14px',
+                  background: 'var(--err)',
+                  color: '#fff',
+                  border: 0,
+                  borderRadius: 12,
+                  fontWeight: 600,
+                  fontSize: 13,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(209,67,67,.2)'
+                }}
+              >
+                Mulai Sesi Teach-Me {I.arrow({ size: 13, stroke: '#fff' })}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* confidence */}
@@ -169,17 +226,17 @@ export default function StudentAssignmentsPage() {
         )}
       </div>
 
-      {/* sticky bottom */}
-      <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 430, padding: '14px 22px 22px', background: '#fff', borderTop: '1px solid var(--line)', display: 'flex', gap: 10, zIndex: 20 }}>
+      {/* sticky bottom action bar */}
+      <div style={{ padding: '14px 22px 22px', background: '#fff', borderTop: '1px solid var(--line)', display: 'flex', gap: 10, zIndex: 20, flexShrink: 0 }}>
         <button onClick={() => setShowHint(true)} className="icon-btn" style={{ width: 48, height: 48, borderRadius: 14, color: 'var(--warn)', background: 'rgba(201,138,23,.10)', border: '1px solid rgba(201,138,23,.2)', flexShrink: 0 }}>
           {I.spark({ size: 18 })}
         </button>
         <button 
-          onClick={handleSubmit}
-          disabled={isSubmitting || !answer.trim()}
+          onClick={gapDetected ? () => router.push(`/student/teach-me?sessionId=${resolvedSessionId}`) : handleSubmit}
+          disabled={isSubmitting || (!answer.trim() && !gapDetected)}
           style={{ 
             flex: 1, 
-            background: isSubmitting ? 'var(--muted)' : 'var(--grad)', 
+            background: gapDetected ? 'var(--err)' : (isSubmitting ? 'var(--muted)' : 'var(--grad)'), 
             color: '#fff', 
             border: 0, 
             borderRadius: 16, 
@@ -189,13 +246,59 @@ export default function StudentAssignmentsPage() {
             alignItems: 'center', 
             justifyContent: 'center', 
             gap: 8, 
-            boxShadow: '0 10px 24px -8px rgba(91,91,247,.5)',
+            boxShadow: gapDetected ? '0 10px 24px -8px rgba(209,67,67,.5)' : '0 10px 24px -8px rgba(91,91,247,.5)',
             cursor: isSubmitting ? 'not-allowed' : 'pointer'
           }}
         >
-          {isSubmitting ? 'Mengirim...' : 'Kirim Jawaban'} {I.arrow({ size: 15, stroke: '#fff' })}
+          {gapDetected ? 'Mulai Sesi Teach-Me' : (isSubmitting ? 'Mengirim...' : 'Kirim Jawaban')} {I.arrow({ size: 15, stroke: '#fff' })}
         </button>
       </div>
+
+      {/* Prerequisite Concepts Modal */}
+      {showConceptsModal && (
+        <div style={{
+          position: 'absolute', inset: 0, background: 'rgba(20,20,26,.4)',
+          backdropFilter: 'blur(4px)', zIndex: 100, display: 'flex',
+          alignItems: 'center', justifyContent: 'center', padding: 20,
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 20, width: '100%', maxWidth: 360,
+            padding: 20, boxShadow: '0 20px 48px -10px rgba(20,20,26,.28)',
+            animation: 'pageFade .25s ease both'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h3 style={{ margin: 0, fontFamily: 'var(--f-serif)', fontSize: 18, fontWeight: 600 }}>Konsep Prasyarat Dipantau</h3>
+              <button 
+                onClick={() => setShowConceptsModal(false)}
+                style={{ border: 0, background: 'none', fontSize: 18, cursor: 'pointer', padding: 4, display: 'flex', color: 'var(--muted)' }}
+              >
+                ✕
+              </button>
+            </div>
+            <p style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.5, marginBottom: 14 }}>
+              TICMI memantau pemahaman Anda terhadap konsep dasar di bawah ini untuk mendeteksi celah belajar (*learning gap*) secara otomatis jika jawaban Anda salah:
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+              {[
+                { t: 'Operasi Aljabar Pecahan', d: 'Menyamakan penyebut dan mengoperasikan pembilang aljabar.' },
+                { t: 'Domain Fungsi Pecahan', d: 'Menentukan daerah asal fungsi dengan syarat penyebut ≠ 0.' },
+                { t: 'Aturan Substitusi', d: 'Memasukkan fungsi g(x) ke dalam variabel x pada f(x).' }
+              ].map(c => (
+                <div key={c.t} style={{ padding: '10px 12px', background: 'var(--bg-2)', borderRadius: 12, border: '1px solid var(--line-2)', textAlign: 'left' }}>
+                  <div style={{ fontWeight: 600, fontSize: 12.5, color: 'var(--ink)' }}>{c.t}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>{c.d}</div>
+                </div>
+              ))}
+            </div>
+            <button 
+              onClick={() => setShowConceptsModal(false)}
+              style={{ width: '100%', padding: '12px', background: 'var(--ink)', color: '#fff', border: 0, borderRadius: 12, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+            >
+              Mengerti
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

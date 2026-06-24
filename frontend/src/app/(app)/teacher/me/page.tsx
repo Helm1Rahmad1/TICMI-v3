@@ -1,8 +1,10 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { I } from '@/components/shared/icons';
 
 export default function TeacherMePage() {
+  const router = useRouter();
   return (
     <div style={{ paddingTop: 54, paddingBottom: 110, minHeight: '100vh', overflow: 'auto' }}>
       <div style={{ padding: '10px 22px 6px' }}>
@@ -71,6 +73,13 @@ export default function TeacherMePage() {
             </div>
           ))}
         </div>
+
+        <button 
+          onClick={() => router.push('/login')}
+          style={{ marginTop: 16, width: '100%', padding: '14px', background: 'var(--err-bg)', color: 'var(--err)', border: '1px solid rgba(209,67,67,.2)', borderRadius: 14, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+        >
+          Keluar / Ganti Peran
+        </button>
       </div>
 
       {/* TICMI pilot info */}

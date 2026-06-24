@@ -61,7 +61,7 @@ export default function StudentHomePage() {
   }, []);
 
   const go = (r: string) => {
-    const map: Record<string, string> = { teach: '/student/teach-me', concept: '/intelligence/concept-map', heatmap: '/intelligence/heatmap' };
+    const map: Record<string, string> = { teach: '/student/teach-me', concept: '/student/map', heatmap: '/intelligence/heatmap' };
     router.push(map[r] ?? `/${r}`);
   };
 
@@ -86,7 +86,7 @@ export default function StudentHomePage() {
     if (hasActiveSession) {
       router.push(`/student/teach-me?sessionId=${activeSession.id}`);
     } else {
-      router.push('/intelligence/concept-map');
+      router.push('/student/map');
     }
   };
 
@@ -166,13 +166,15 @@ export default function StudentHomePage() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {[
+            { d: false, t: 'Quiz Fungsi Komposisi',     x: '+120 XP', hot: true, action: () => router.push('/student/assignments') },
+            { d: isOperasiBilanganGreen, t: 'Teach Kiko tentang Pecahan', x: '+180 XP', hot: !isOperasiBilanganGreen, action: () => handleContinue() },
             { d: true,  t: 'Review eksponen positif',  x: '+40 XP',  hot: false },
-            { d: true,  t: 'Quiz matriks 2×2',         x: '+120 XP', hot: false },
-            { d: isOperasiBilanganGreen, t: 'Teach Kiko tentang Pecahan', x: '+180 XP', hot: !isOperasiBilanganGreen  },
             { d: false, t: 'Apply · 3 word problems',   x: '+90 XP',  hot: false },
             { d: false, t: 'Pair-teach with Hesti',     x: '+60 XP',  hot: false },
           ].map((r, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px', border: '1px solid ' + (r.hot ? 'rgba(91,91,247,.35)' : 'var(--line)'), borderRadius: 16, background: r.hot ? 'linear-gradient(180deg,rgba(91,91,247,.04),#fff)' : '#fff', minHeight: 52 }}>
+            <div key={i} 
+              onClick={r.action}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px', border: '1px solid ' + (r.hot ? 'rgba(91,91,247,.35)' : 'var(--line)'), borderRadius: 16, background: r.hot ? 'linear-gradient(180deg,rgba(91,91,247,.04),#fff)' : '#fff', minHeight: 52, cursor: r.action ? 'pointer' : 'default' }}>
               <span style={{ width: 28, height: 28, borderRadius: 999, display: 'grid', placeItems: 'center', flexShrink: 0, background: r.d ? 'var(--ok-bg)' : r.hot ? 'rgba(91,91,247,.10)' : 'var(--bg-2)', border: '1px solid ' + (r.d ? 'transparent' : r.hot ? 'rgba(91,91,247,.25)' : 'var(--line)') }}>
                 {r.d ? I.check({ size: 14, stroke: 'var(--ok)' }) : r.hot ? I.zap({ size: 14, stroke: 'var(--indigo)' }) : <span style={{ width: 6, height: 6, borderRadius: 999, background: 'var(--muted-2)' }} />}
               </span>
